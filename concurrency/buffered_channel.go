@@ -27,4 +27,7 @@ func main() {
 	bufferedChannel <- 9
 
 	close(bufferedChannel)
+
+	//The program will wait until done is true
+	<-done
 }
