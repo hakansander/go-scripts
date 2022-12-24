@@ -30,4 +30,6 @@ func main() {
 
 	//The program will wait until done is true
 	<-done
+
+	fmt.Println("done chan is true and the program is terminating now")
 }
