@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/valyala/fasthttp"
+	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -33,19 +35,31 @@ func main() {
 }
 
 func getHttp() ([]byte, error) {
-	request := fasthttp.AcquireRequest()
-	request.Header.SetMethod(fasthttp.MethodGet)
-	request.Header.SetRequestURI(url)
-	request.Header.Add("Accept", "application/json")
-	defer fasthttp.ReleaseRequest(request) //at the end of the method, release the request
-
-	response := fasthttp.AcquireResponse() //send request to pool, if the response cannot be found at the pool, then creates a new response
-	defer fasthttp.ReleaseResponse(response)
-
-	err := fasthttp.Do(request, response)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
-	return response.Body(), nil
+	request.Header.Add("Accept", "application/json")
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	responseByte, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(responseByte))
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(response.Body)
+
+	return responseByte, nil
 }
